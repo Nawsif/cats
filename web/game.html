@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>C.A.T.S.</title>
+<script src="isolation.js"></script>
+<script src="split-loader.js?v=f52ae08ade7c59b5"></script>
+<link rel="icon" href="data:,">
+<style>
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#000;color:#fff;font:14px system-ui}main{width:100%;height:100%;display:grid;place-items:center}#game-screen{position:relative;width:min(100vw,177.7778vh);height:min(100vh,56.25vw)}canvas{display:block;width:100%;height:100%;touch-action:none;outline:none}#game-display{position:absolute;inset:0;pointer-events:none;transform:scaleY(-1)}#status{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:5;margin:0;padding:8px 14px;border-radius:6px;background:#000a;text-align:center;pointer-events:none;max-width:90vw}#fps{position:fixed;top:12px;left:14px;z-index:5;font:600 14px ui-monospace,monospace;background:#0008;padding:6px 9px;border-radius:4px;pointer-events:none}#diagnostics{position:fixed;inset:50% 12px 12px;z-index:8;background:#101518ef;border:1px solid #65716c;border-radius:8px;padding:14px;overflow:auto}#diagnostics[hidden]{display:none}#log{white-space:pre-wrap;overflow-wrap:anywhere;font:12px ui-monospace,monospace}dialog{width:min(360px,calc(100vw - 40px));padding:28px;background:#1b1d20;color:#eceef0;border:1px solid #383b40;border-radius:10px;box-shadow:0 16px 48px #0005;font:14px system-ui,sans-serif}dialog::backdrop{background:#0008}dialog h2{margin:0 0 8px;font-size:21px;line-height:1.3;font-weight:600;letter-spacing:-.4px}dialog p{margin:0 0 20px;color:#a7abb2;line-height:1.5;font-size:13px}dialog p:empty{display:none}dialog input{display:block;width:100%;height:46px;margin:20px 0 18px;padding:0 13px;background:#121416;color:#f2f3f5;border:1px solid #42464d;border-radius:6px;outline:none;font:15px system-ui;transition:border-color .12s}dialog input::placeholder{color:#787e88}dialog input:focus{border-color:#a5abb4}dialog input[aria-invalid="true"]{border-color:#b96f6f}dialog button{height:42px;padding:0 18px;background:#e4e6e9;color:#202226;border:1px solid transparent;border-radius:6px;font:600 14px system-ui;cursor:pointer}dialog button:hover{background:#fff}dialog button:focus-visible{outline:2px solid #a5abb4;outline-offset:3px}dialog button:disabled{opacity:.5;cursor:wait}dialog form>div{display:flex;justify-content:flex-end;gap:8px}dialog button[type="button"]{background:transparent;color:#bfc3ca;border-color:#42464d}dialog button[type="button"]:hover{background:#292c31}dialog .input-error{color:#d59b9b;margin:0 0 16px;font-size:12px}
+</style><main><div id="game-screen"><canvas id="canvas" width="1280" height="720" tabindex="0" aria-label="Game screen"></canvas></div></main>
+<div id="fps" aria-label="Frame rate">— FPS</div><p id="status" role="status">Preparing download...</p><aside id="diagnostics" hidden><strong>Diagnostic log · press \ to hide</strong><pre id="log"></pre></aside>
+<script src="save-manager.js?v=b9f71a75f72f3b15"></script>
+<script src="admin-native.js?v=1e7c50a849e5185d"></script>
+<script src="admin-panel.js?v=332ef8dcfc7a82e0"></script>
+<script>
+const status = document.querySelector('#status');
+const output = document.querySelector('#log');
+const canvas = document.querySelector('#canvas');
+let logText='',logDirty=false,lastFrame=0,frameCount=0,fpsStart=performance.now();
+function log(line){logText=(logText+'\n'+line).slice(-64000);logDirty=true;if(line.includes('stopped after')){status.hidden=false;status.textContent='The game stopped. Reload to restart.';canvas.style.pointerEvents='none';}}
+setInterval(()=>{if(!document.querySelector('#diagnostics').hidden&&logDirty){output.textContent=logText;logDirty=false;output.scrollTop=output.scrollHeight;}const now=performance.now();document.querySelector('#fps').textContent=(lastFrame&&now-lastFrame<1500?Math.round(frameCount*1000/(now-fpsStart)):0)+' FPS';fpsStart=now;frameCount=0;},1000);
+window.addEventListener('keydown',event=>{if(event.key==='\\'&& !event.target.matches('input,textarea')){event.preventDefault();const panel=document.querySelector('#diagnostics');panel.hidden=!panel.hidden;}});
+async function startGame() {
+  await window.catsIsolationReady;
+  /* CATS_WISP_WAKE */
+  status.hidden=false;
+  status.textContent='Waking game connection server...';
+  try {
+    const deadline=Date.now()+90000;
+    let ready=false,lastError;
+    while(!ready && Date.now()<deadline){
+    try {await new Promise((resolve,reject)=>{
+      const probe=new WebSocket('wss://cats-wisp.onrender.com/');
+      probe.binaryType='arraybuffer';
+      let settled=false;
+      const timer=setTimeout(()=>{if(!settled){settled=true;probe.close();reject(Error('Wisp server is still waking.'));}},Math.min(15000,deadline-Date.now()));
+      const fail=()=>{if(!settled){settled=true;clearTimeout(timer);reject(Error('Cannot reach the Wisp server. Reload to retry.'));}};
+      probe.onmessage=event=>{
+        const bytes=new Uint8Array(event.data);
+        if(bytes.length>=9 && bytes[0]===3 && new DataView(event.data).getUint32(1,true)===0){
+          settled=true;clearTimeout(timer);probe.close();resolve();
+        }else{probe.close();fail();}
+      };
+      probe.onerror=fail;
+      probe.onclose=fail;
+    });ready=true;} catch(error){lastError=error;await new Promise(resolve=>setTimeout(resolve,1000));}
+    }
+    if(!ready)throw lastError||Error('Wisp server did not wake. Reload to retry.');
+    status.textContent='Preparing download...';
+  } catch(error) {status.textContent=error.message;return;}
+
+  if(!crossOriginIsolated){status.textContent='The local server needs to be restarted before this test can run.';return;}
+  try {const response=await fetch('engine/arc_boot.js',{method:'HEAD'});if(!response.ok)throw Error('The engine build is not available yet.');}
+  catch(error){status.textContent=error.message;return;}
+  const nativeFetch=window.fetch.bind(window);
+  const downloads=new Map(['arc_boot.wasm','arc_boot.data'].map(name=>[name,{loaded:0,total:0}]));
+  let downloadFinished=false,lastProgress=0;
+  function showProgress(force=false){
+    const now=performance.now();if(!force&&now-lastProgress<100)return;lastProgress=now;
+    let loaded=0,total=0;for(const file of downloads.values()){loaded+=file.loaded;total+=file.total;}
+    status.hidden=false;const mb=bytes=>(bytes/1000000).toFixed(1);
+    status.textContent=total?'Downloading '+mb(loaded)+' MB / '+mb(total)+' MB':'Downloading '+mb(loaded)+' MB';
+    if(total&&[...downloads.values()].every(file=>file.total>0&&file.loaded>=file.total)){downloadFinished=true;status.textContent='Downloaded '+mb(total)+' MB / '+mb(total)+' MB · Starting game...';}
+  }
+  await Promise.all([...downloads].map(async([name,file])=>{try{const response=await nativeFetch((name==='arc_boot.wasm'?'engine/admin/arc_boot.wasm':'engine/'+name)+'?v=split-v1',{method:'HEAD'});if(response.ok)file.total=Number(response.headers.get('Content-Length'))||0;}catch{}}));
+  showProgress(true);
+  window.fetch=async(input,options)=>{
+    const response=await nativeFetch(input,options);
+    const url=new URL(typeof input==='string'||input instanceof URL?input:input.url,location.href);
+    const file=url.origin===location.origin?downloads.get(url.pathname.split('/').pop()):null;
+    if(!file||!response.ok||!response.body||options?.method==='HEAD')return response;
+    file.loaded=0;file.total=Number(response.headers.get('Content-Length'))||file.total;
+    const stream=response.body.pipeThrough(new TransformStream({transform(chunk,controller){file.loaded+=chunk.byteLength;showProgress();controller.enqueue(chunk);},flush(){if(!file.total)file.total=file.loaded;showProgress(true);}}));
+    return new Response(stream,{status:response.status,statusText:response.statusText,headers:response.headers});
+  };
+
+  const {deviceId,preferencesKey}=CatsSaves.profile;
+  const savedDatabase=await CatsSaves.database().catch(()=>null);
+  const savedFiles=savedDatabase?await CatsSaves.readFiles():[];
+  const display=document.createElement('canvas');display.id='game-display';display.width=1280;display.height=720;display.setAttribute('aria-hidden','true');
+  document.querySelector('#game-screen').append(display);
+  const presentation=display.getContext('2d',{alpha:false});let presentedImage;const textDialogs=new Map();
+  window.Module={
+    onGameLoadProgress:progress=>{if(!status.hidden)status.textContent='Loading assets · '+(progress.bytes/1000000).toFixed(1)+' MB read · '+progress.files.toLocaleString()+' files';},
+    onGameFrame:(pixels,width,height)=>{lastFrame=performance.now();frameCount++;if(status.textContent.startsWith('Starting the game'))status.textContent='Loading the game…';presentedImage ||= presentation.createImageData(width,height);presentedImage.data.set(new Uint8Array(pixels));presentation.putImageData(presentedImage,0,0);if(!status.hidden&&frameCount%20===0){const data=presentedImage.data;let low=255,high=0;for(let at=0;at<data.length;at+=16384){low=Math.min(low,data[at]);high=Math.max(high,data[at]);}if(high-low>90)status.hidden=true;}},
+    onGameTextInput:request=>{
+      const dialog=document.createElement('dialog');dialog.id='game-text-dialog';
+      const form=document.createElement('form'),title=document.createElement('h2'),message=document.createElement('p'),input=document.createElement('input'),actions=document.createElement('div'),okay=document.createElement('button');
+      title.textContent=request.title;message.textContent=request.message;input.placeholder=request.hint||'Username';dialog.setAttribute('aria-labelledby','game-input-title');title.id='game-input-title';input.setAttribute('aria-label',request.hint||request.title||'Enter text');input.autocomplete='off';input.maxLength=64;input.type=request.mode===3?'email':'text';if(request.mode===2)input.inputMode='tel';
+      okay.textContent=request.accept||'OK';okay.type='submit';actions.append(okay);form.append(title,message,input,actions);dialog.append(form);document.body.append(dialog);
+      const finish=accepted=>{const data=new TextEncoder().encode(input.value),pointer=wasmExports.malloc(data.length+1);HEAPU8.set(data,pointer);HEAPU8[pointer+data.length]=0;wasmExports.arc_jni_text_complete(request.id,accepted?1:0,pointer);wasmExports.free(pointer);for(const button of actions.querySelectorAll('button'))button.disabled=true;};
+      form.addEventListener('submit',event=>{event.preventDefault();finish(true);});
+      if(request.cancel){const cancel=document.createElement('button');cancel.textContent=request.cancel;cancel.type='button';cancel.addEventListener('click',()=>finish(false));actions.prepend(cancel);}
+      textDialogs.set(request.id,{dialog,input,actions,message});dialog.addEventListener('cancel',event=>{event.preventDefault();if(request.mode!==1)finish(false);});dialog.showModal();input.focus();
+    },
+    onGameTextInputDone:(id,valid)=>{const entry=textDialogs.get(id);if(!entry)return;if(valid){entry.dialog.close();entry.dialog.remove();textDialogs.delete(id);canvas.focus();}else{entry.message.textContent='Please choose another name.';entry.message.className='input-error';entry.message.setAttribute('role','alert');entry.input.setAttribute('aria-invalid','true');for(const button of entry.actions.querySelectorAll('button'))button.disabled=false;entry.input.focus();}},
+    onGameFileSaved:path=>{if(CatsSaves.paused||path.includes('zf_auto_scaled_textures'))return;try{CatsSaves.saveFile(path,FS.readFile(path));}catch(error){console.error('Could not save game progress',error.message);}},
+    canvas,
+    arguments:['--assets=/assets','--window','--entry=Java_com_zf_ZRenderer_nativeSurfaceCreated','--entry=Java_com_zf_ZRenderer_nativeSurfaceChanged','--args=1280,720','--entry=Java_com_zf_ZRenderer_nativeViewCreated','--args=obj,obj','--entry=Java_com_zf_ZRenderer_nativeOnResume','--loop','/libCATS.so'],
+    locateFile:file=>file==='arc_boot.wasm'?'engine/admin/arc_boot.wasm?v=e805a5ceb781f18d':'engine/'+file+'?v=2463a7a222ee4bcc',
+    print:line=>log(String(line)),printErr:line=>log(String(line)),
+    preRun:[()=>{ENV.ARC_CORES='2';ENV.ARC_APP_VERSION='3.35.10';ENV.ARC_LANG='en';ENV.ARC_LOCALE='en_US';ENV.ARC_ANDROID_ID=deviceId;if(location.search.includes('trace'))ENV.ARC_TRACE_NET='1';if(location.search.includes('services'))ENV.ARC_TRACE_SERVICES='1';if(location.search.includes('trace')){ENV.ARC_TRACE_JNI='1';ENV.ARC_TRACE_THREADS='1';ENV.ARC_TRACE_FILES='1';}}],
+    setStatus:text=>{if(text)status.textContent=text.startsWith('Downloading')?'Loading the original game files…':text;},
+    onRuntimeInitialized:()=>{
+      for(const file of savedFiles){if(file.path.includes('/store_live_packs/')&&file.bytes.length===364&&new TextDecoder().decode(file.bytes.slice(0,40)).toLowerCase().includes('<!doctype html')){savedDatabase.transaction('files','readwrite').objectStore('files').delete(file.path);continue;}const slash=file.path.lastIndexOf('/');if(slash>0)FS.mkdirTree(file.path.slice(0,slash));FS.writeFile(file.path,file.bytes);}
+      const preferencePath='/assets/prefs.txt', preferenceKey=preferencesKey;
+      const saved=localStorage.getItem(preferenceKey);if(saved!==null)FS.writeFile(preferencePath,saved);
+      const closeFile=FS.close;let savingPreferences=false;
+      FS.close=function(stream){const path=stream.path;const result=closeFile.call(this,stream);if(path===preferencePath&&!savingPreferences&&!CatsSaves.paused){savingPreferences=true;try{CatsSaves.savePreferences(FS.readFile(preferencePath,{encoding:'utf8'}));}catch(error){console.error('Could not save game settings',error.message);}finally{savingPreferences=false;}}return result;};
+      status.textContent='Starting the original game engine…';canvas.focus();},
+    onAbort:reason=>{canvas.style.pointerEvents='none';log(String(reason));status.textContent='The engine stopped. See the diagnostic log for the failure.';}
+  };
+  const script=document.createElement('script');script.src='engine/arc_boot.js?v=3961885a13d26593';
+  script.onerror=()=>{status.textContent='The engine could not be loaded.';};
+  document.body.append(script);
+}
+startGame().catch(error=>{status.hidden=false;status.textContent='Could not start the game: '+error.message;log(error.stack||error.message);});
+canvas.addEventListener('contextmenu',event=>event.preventDefault());
+window.addEventListener('error',event=>{log(event.message);status.textContent='The engine encountered an error. See the diagnostic log.';});
+</script></html>

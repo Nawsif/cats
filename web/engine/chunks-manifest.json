@@ -1,0 +1,150 @@
+{
+  "version": 1,
+  "chunkBytes": 18000000,
+  "files": {
+    "engine/arc_boot.data": {
+      "size": 284856634,
+      "sha256": "7f47643c8311667fe17b4c596c176935093b7f61a652b32b05b423b64ade3f51",
+      "mime": "application/octet-stream",
+      "parts": [
+        {
+          "path": "engine/chunks/arc_boot.data-7f47643c8311.part001",
+          "size": 18000000,
+          "sha256": "36183adafc73484ebba3e3ea20388723ba27625c062437c787844710d3660ca3"
+        },
+        {
+          "path": "engine/chunks/arc_boot.data-7f47643c8311.part002",
+          "size": 18000000,
+          "sha256": "0d05f2b9ed7eb5a92c88c65201ef936d8d29908509dafbde74f00196de783f5e"
+        },
+        {
+          "path": "engine/chunks/arc_boot.data-7f47643c8311.part003",
+          "size": 18000000,
+          "sha256": "a81fc9a077e861ce4228f1cbb9ac9f8fa87a10318b5debe02cdf8bcf713cd40a"
+        },
+        {
+          "path": "engine/chunks/arc_boot.data-7f47643c8311.part004",
+          "size": 18000000,
+          "sha256": "2fe275152961470415a06eba756b0c86fccbe3ac53d9d13e1dd4c3e93d53f2bb"
+        },
+        {
+          "path": "engine/chunks/arc_boot.data-7f47643c8311.part005",
+          "size": 18000000,
+          "sha256": "9d7ac97f3fb7907242f782a8e551d0bc4071f95e70e590b2e91c3b1b4f50c7ca"
+        },
+        {
+          "path": "engine/chunks/arc_boot.data-7f47643c8311.part006",
+          "size": 18000000,
+          "sha256": "3226b5a99712d2917d4f423be496a56e010a1d066e747e7cf9b55ed78bf124f2"
+        },
+        {
+          "path": "engine/chunks/arc_boot.data-7f47643c8311.part007",
+          "size": 18000000,
+          "sha256": "4ebad1e58a126bf7ec9cc394bc8a580c5220e8185ccd438b0cc8e6a0fa48c70e"
+        },
+        {
+          "path": "engine/chunks/arc_boot.data-7f47643c8311.part008",
+          "size": 18000000,
+          "sha256": "6bc0054383732a0add0bb2912aea9dfdcb6f95d00ccc47b07f9d8509683cebfd"
+        },
+        {
+          "path": "engine/chunks/arc_boot.data-7f47643c8311.part009",
+          "size": 18000000,
+          "sha256": "4992db8178e43a8d4adcad808c20fe31d4ddbf087a5cd5b858197fb7c45ed8a5"
+        },
+        {
+          "path": "engine/chunks/arc_boot.data-7f47643c8311.part010",
+          "size": 18000000,
+          "sha256": "c99514c5f7068503379f9077c8ac15d2ab1507e355195de79157b0c0245c324f"
+        },
+        {
+          "path": "engine/chunks/arc_boot.data-7f47643c8311.part011",
+          "size": 18000000,
+          "sha256": "c9c3e447045aad6b1af9ca15e34f189921d6024581885e3aafa4744c515eaf77"
+        },
+        {
+          "path": "engine/chunks/arc_boot.data-7f47643c8311.part012",
+          "size": 18000000,
+          "sha256": "99bc4f6fc5b6599455904c22b17b3cdd41aa6e43c24b378925fe9a3485344acd"
+        },
+        {
+          "path": "engine/chunks/arc_boot.data-7f47643c8311.part013",
+          "size": 18000000,
+          "sha256": "38f47237ad28e138d0be49e1d1dc7e1699b586c5cb2d83649cd260d8359f4e7b"
+        },
+        {
+          "path": "engine/chunks/arc_boot.data-7f47643c8311.part014",
+          "size": 18000000,
+          "sha256": "8a91f4a2d26cbd6c75c95d98487bb279259de73c986d29dc84bfd57b51e0e819"
+        },
+        {
+          "path": "engine/chunks/arc_boot.data-7f47643c8311.part015",
+          "size": 18000000,
+          "sha256": "0c433f48b4c9b719c5d0dcb7732f5bbc302128e693d9026a1202b103cb22eb56"
+        },
+        {
+          "path": "engine/chunks/arc_boot.data-7f47643c8311.part016",
+          "size": 14856634,
+          "sha256": "2ae6ec23bb2b44e7e3298ccb3f184333d82ec93d3571c759f5ed43e395681b70"
+        }
+      ]
+    },
+    "engine/admin/arc_boot.wasm": {
+      "size": 178885174,
+      "sha256": "e805a5ceb781f18d5d7ca94d727afff4f0309c6f6b26c13630a8775cdec2a98f",
+      "mime": "application/wasm",
+      "parts": [
+        {
+          "path": "engine/chunks/arc_boot.wasm-e805a5ceb781.part001",
+          "size": 18000000,
+          "sha256": "b31d4114efa112dcd3f1136f8253287332d917c2f32c567dc0a4e0b03d4ae98e"
+        },
+        {
+          "path": "engine/chunks/arc_boot.wasm-e805a5ceb781.part002",
+          "size": 18000000,
+          "sha256": "81f685c1fd6593c050db19eafa7096e3f311c458f7b43bfa22f1819eecde28cf"
+        },
+        {
+          "path": "engine/chunks/arc_boot.wasm-e805a5ceb781.part003",
+          "size": 18000000,
+          "sha256": "ed77aef2be82568c400e48fdabed21d5ed99ae881833f7cc5dbf9b6bba0a659b"
+        },
+        {
+          "path": "engine/chunks/arc_boot.wasm-e805a5ceb781.part004",
+          "size": 18000000,
+          "sha256": "7ccc16c97b25cb3c5239a1448f8b5b34dd0d6cddbf86f38ce6b1122853589546"
+        },
+        {
+          "path": "engine/chunks/arc_boot.wasm-e805a5ceb781.part005",
+          "size": 18000000,
+          "sha256": "a3bd07eea7359355628a370eac9e709d47e27dbdc032c314a5fd73007acc79a4"
+        },
+        {
+          "path": "engine/chunks/arc_boot.wasm-e805a5ceb781.part006",
+          "size": 18000000,
+          "sha256": "aa21c63fd63b9950bb1c5fe917dda0ddce14016cab325219caa6d5b96b94304a"
+        },
+        {
+          "path": "engine/chunks/arc_boot.wasm-e805a5ceb781.part007",
+          "size": 18000000,
+          "sha256": "51775dabb1908ccb8964400f3d354e70f797cc4ab589a775054475f763a78eec"
+        },
+        {
+          "path": "engine/chunks/arc_boot.wasm-e805a5ceb781.part008",
+          "size": 18000000,
+          "sha256": "074ac99a8f98aea4eabbab719f6ab0fd6778bde71ce48958c3b02bdf33a407b9"
+        },
+        {
+          "path": "engine/chunks/arc_boot.wasm-e805a5ceb781.part009",
+          "size": 18000000,
+          "sha256": "0955899650f8cfe64f51393dc5361525f3b44690e55a6c88fdf03156f5f08b77"
+        },
+        {
+          "path": "engine/chunks/arc_boot.wasm-e805a5ceb781.part010",
+          "size": 16885174,
+          "sha256": "4efd461b4af63c2549e2a4bf25febe3d05c07c5b578164dd111cc0e3bc625d39"
+        }
+      ]
+    }
+  }
+}
